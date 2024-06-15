@@ -94,6 +94,8 @@ bool search(char* us_state, char solution[5][5]) {
         int j = state.coord.j;
         char letter = us_state[state.letter_index];
 
+        // printf("%c, (%d, %d)\n", letter, i, j);
+
         if (letter == '\0') {
             return true;
         }
@@ -135,7 +137,7 @@ bool search(char* us_state, char solution[5][5]) {
     return false;
 }
 
-int score(char solution[5][5], Census census) {
+int score_print(char solution[5][5], Census census) {
     int score = 0;
     for (int i = 0; i < 50; i++) {
         char* us_state = census.us_states[i];
@@ -148,7 +150,17 @@ int score(char solution[5][5], Census census) {
     return score;
 }
 
-char randomise(char solution[5][5]) { 
+int score(char solution[5][5], Census census) {
+    int score = 0;
+    for (int i = 0; i < 50; i++) {
+        char* us_state = census.us_states[i];
+        bool result = search(us_state, solution);
+        score += result * census.pops[i];
+    }
+    return score;
+}
+
+void randomise(char solution[5][5]) { 
     // printf("%c", 65 + rand() % 26);
 
     for (int i = 0; i < 5; i++) {
@@ -156,36 +168,117 @@ char randomise(char solution[5][5]) {
             solution[i][j] = (char) 65 + rand() % 26;
         }
     }
-    return solution;
 }
 
-int main() { 
+void print_solution(char solution[5][5]) {    
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            printf("%c ", solution[i][j]);
+        }
+        printf("\n");
+    } 
+    printf("\n");
+}
+
+const int GENERATION_SIZE = 1000;
+
+int sample(int fitness[GENERATION_SIZE], int max_fitness) {
+    bool choice = false;
+    int ind;
+
+    while (!choice) {
+        ind = rand() % GENERATION_SIZE;
+        float r = ((float)rand()/(float)(RAND_MAX));
+        float s = ((float)fitness[ind]/(float)(max_fitness));
+
+        choice = r <= s;
+    }
+    return ind;
+}
+
+void cross_over(char result[5][5], char ind_A[5][5], char ind_B[5][5]) {
+    for (int i = 0; i < 3; i++) { 
+        for (int j = 0; j < 5; j++) {
+            result[i][j] = ind_A[i][j];
+        } 
+    } 
+    for (int i = 3; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            result[i][j] = ind_A[i][j];
+        } 
+    }
+}
+
+void mutate(char ind[5][5]) {
+    for (int i = 0; i < 3; i++) { 
+        ind[rand() % 5][rand() % 5] = (char)(65 + rand() % 26);
+    }
+}
+
+int main() {
     srand(time(NULL));
-    char solution[5][5] = {
-        {'C', 'I', 'F', 'A', 'A'},
-        {'A', 'L', 'A', 'N', 'A'},
-        {'A', 'A', 'R', 'N', 'A'},
-        {'A', 'A', 'I', 'A', 'A'},
-        {'A', 'A', 'A', 'A', 'A'},
-    };
-  
+    char generation[GENERATION_SIZE][5][5];
+    char next_generation[GENERATION_SIZE][5][5];
+
+    char (*pgeneration)[GENERATION_SIZE][5][5] = &generation;
+    char (*pnext_generation)[GENERATION_SIZE][5][5] = &next_generation;
+    char (*temp)[GENERATION_SIZE][5][5];
+
+    int fitness[GENERATION_SIZE];
+
     Census census;
     read_census(&census);  
 
-    for (int k = 0; k < 1000; k++) {
-        randomise(solution);
-        int s = score(solution, census);
-        if (s > 0) {
-            printf("%d\n", s);
-            for (int i = 0; i < 5; i++) {
-                for (int j = 0; j < 5; j++) {
-                    printf("%c ", solution[i][j]);
-                }
-                printf("\n");
-            } 
-        } 
-        printf("\n");
-    }
+    int generational_max_fitness = 0;
+    int max_fitness = 0;
+    int max_ind = 0;
 
-    return 0;
+    for (int ind = 0; ind < GENERATION_SIZE; ind++) {
+        randomise(generation[ind]);
+        fitness[ind] = score(generation[ind], census);
+        if (fitness[ind] >= max_fitness) {
+            max_fitness = fitness[ind];
+            max_ind = ind;
+        }
+    }
+    printf("%d\n", max_fitness);
+
+    while (true) { 
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {     
+                (*pnext_generation)[0][i][j] = (*pgeneration)[max_ind][i][j];
+            }
+        }
+        int n = 1;
+        while (n < GENERATION_SIZE) {
+            int ind_A = sample(fitness, max_fitness);
+            int ind_B = sample(fitness, max_fitness);
+            
+            cross_over((*pnext_generation)[n], (*pgeneration)[ind_A], (*pgeneration)[ind_B]);
+            mutate((*pnext_generation)[n]);
+            n++;
+        }
+
+        // swap generation with next_generation 
+        temp = pnext_generation;
+        pnext_generation = pgeneration;
+        pgeneration = pnext_generation;
+        
+        max_fitness = 0;
+        for (int ind = 0; ind < GENERATION_SIZE; ind++) {
+            fitness[ind] = score((*pgeneration)[ind], census);
+            
+            if (fitness[ind] >= max_fitness) {
+                max_fitness = fitness[ind];
+                max_ind = ind;
+            }
+        }
+        printf("%d\n", max_fitness);
+        if ((max_fitness >= 165379868) && max_fitness > (generational_max_fitness)) {
+            generational_max_fitness = max_fitness;
+            print_solution(generation[max_ind]);
+        }
+
+    }
 }
+
