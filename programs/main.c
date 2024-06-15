@@ -3,6 +3,7 @@
 #include<string.h>
 #include<stdbool.h> 
 #include<assert.h>
+#include<time.h>
 
 typedef struct {
     char us_states[50][20];
@@ -47,12 +48,12 @@ typedef struct {
 } SearchStateStack;
 
 void push(SearchStateStack *stack, SearchState item) {
-    // assert(stack->top < stack->capacity);
+    assert(stack->top < stack->capacity);
     stack->stack[stack->top] = item;
     stack->top += 1;
 }
 SearchState pop(SearchStateStack *stack) {
-    // assert(stack->top > 0);
+    assert(stack->top > 0);
     stack->top -= 1;
     SearchState item = stack->stack[stack->top];
     return item;
@@ -85,20 +86,13 @@ bool search(char* us_state, char solution[5][5]) {
             push(&stack, state); 
         }
     }
-    // printf("%d\n", stack.top);
-
-    // for (int i = 0; i < 25; i++) {
-    //     SearchState item = stack.stack[i];
-    //     printf("%d, %d, %c\n", item.coord.i, item.coord.j, us_state[item.letter_index]);
-    // }
+    
     while (stack.top > 0) {
         SearchState state = pop(&stack);
         SearchState new_state;
         int i = state.coord.i;
         int j = state.coord.j;
         char letter = us_state[state.letter_index];
-
-        // printf("(%d, %d) %c, %d\n", i, j, letter, state.extra_life);
 
         if (letter == '\0') {
             return true;
@@ -116,7 +110,6 @@ bool search(char* us_state, char solution[5][5]) {
                 }
                 int new_i = i + di;
                 int new_j = j + dj;
-                // printf("%d, %d\n", new_i, new_j);
                 
                 if (solution[new_i][new_j] == letter) {
                     new_state = (SearchState) {
@@ -147,39 +140,27 @@ int score(char solution[5][5], Census census) {
     for (int i = 0; i < 50; i++) {
         char* us_state = census.us_states[i];
         bool result = search(us_state, solution);
-        printf("%s\t%d\n", us_state, result);
+        if (result) {
+            printf("us_state: %s\n", us_state);
+        }
         score += result * census.pops[i];
     }
     return score;
 }
 
-/*
-# initialise variables
-$letter = state[0];
-$life = 1;
-$coordinate = NULL;
+char randomise(char solution[5][5]) { 
+    // printf("%c", 65 + rand() % 26);
 
-# initialise search
-loop through all 25 squares looking for $letter
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            solution[i][j] = (char) 65 + rand() % 26;
+        }
+    }
+    return solution;
+}
 
-if $letter not found
-    life -= 1; 
-    recurse with next letter
-else 
-    $coordinate = Coord {i, j}
-    recurse with next $letter and $coordinate
-in the recursion, if we reach the last letter, then we return and add the population to the score
-*/
-
-/*
-Ok, let's see how to do this iteratively
-
-we maintain a stack of coordinates, letters, lives, and then while the stack is not empty, continue processing the next item pushing more stuff onto the stack.  
-
-If we finish all the letters, we break, and chuck the population onto the score 
-*/
-
-int main() {
+int main() { 
+    srand(time(NULL));
     char solution[5][5] = {
         {'C', 'I', 'F', 'A', 'A'},
         {'A', 'L', 'A', 'N', 'A'},
@@ -187,15 +168,24 @@ int main() {
         {'A', 'A', 'I', 'A', 'A'},
         {'A', 'A', 'A', 'A', 'A'},
     };
-   
+  
     Census census;
     read_census(&census);  
 
-    // printf("%d\n", census.pops[1]);
-    // printf("%s\n", census.states[1]);
-    
-    int s = score(solution, census);
-    printf("%d", s);
+    for (int k = 0; k < 1000; k++) {
+        randomise(solution);
+        int s = score(solution, census);
+        if (s > 0) {
+            printf("%d\n", s);
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < 5; j++) {
+                    printf("%c ", solution[i][j]);
+                }
+                printf("\n");
+            } 
+        } 
+        printf("\n");
+    }
 
     return 0;
 }
