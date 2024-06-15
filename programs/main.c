@@ -137,19 +137,6 @@ bool search(char* us_state, char solution[5][5]) {
     return false;
 }
 
-int score_print(char solution[5][5], Census census) {
-    int score = 0;
-    for (int i = 0; i < 50; i++) {
-        char* us_state = census.us_states[i];
-        bool result = search(us_state, solution);
-        if (result) {
-            printf("us_state: %s\n", us_state);
-        }
-        score += result * census.pops[i];
-    }
-    return score;
-}
-
 int score(char solution[5][5], Census census) {
     int score = 0;
     for (int i = 0; i < 50; i++) {
@@ -241,7 +228,6 @@ int main() {
             max_ind = ind;
         }
     }
-    printf("%d\n", max_fitness);
 
     while (true) { 
         for (int i = 0; i < 5; i++) {
@@ -273,9 +259,9 @@ int main() {
                 max_ind = ind;
             }
         }
-        printf("%d\n", max_fitness);
         if ((max_fitness >= 165379868) && max_fitness > (generational_max_fitness)) {
             generational_max_fitness = max_fitness;
+            printf("%d\n", max_fitness);
             print_solution(generation[max_ind]);
         }
 
