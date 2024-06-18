@@ -52,19 +52,25 @@ def search(us_state, solution):
     return False
                 
 solution = [r.split(" ") for r in """\
-A D H A I
-O G T N S
-C H E O I
-I A R V L
-M N L I F
+P I T K M
+O E R A H
+S N I O S
+D A Y L C
+V L F S E
 """.split("\n")]
 
+us_states = set() 
+crucial_states = ["PENNSYLVANIA", "OREGON", "NEVADA", "UTAH", "COLORADO", "ARIZONA", "NEWMEXICO", "TEXAS", "ARKANSAS", "MISSISSIPPI", "ALABAMA", "FLORIDA"]
 
 score = 0
 for us_state, pop in census:
     if search(us_state, solution):
         score += int(pop)
         print(us_state)
+        us_states.add(us_state)
         print()
 
-print(score)
+for us_state in crucial_states:
+    print(us_state, us_state in us_states)
+print()
+print("Score:", score)

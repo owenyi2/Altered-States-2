@@ -12,7 +12,7 @@ typedef struct {
 
 void read_census(Census *census) { 
     FILE *fptr;
-    fptr = fopen("data/census.txt", "r");
+    fptr = fopen("data/restricted.txt", "r");
     char line[100];
     int i = 0;
 
@@ -142,6 +142,9 @@ int score(char solution[5][5], Census census) {
     for (int i = 0; i < 50; i++) {
         char* us_state = census.us_states[i];
         bool result = search(us_state, solution);
+        if ((i == 0) && !result)  {
+            return 1;
+        }
         score += result * census.pops[i];
     }
     return score;
@@ -237,6 +240,11 @@ int main() {
         }
         int n = 1;
         while (n < GENERATION_SIZE) {
+            if (n < GENERATION_SIZE * 0.1) {
+                randomise((*pnext_generation)[n]);
+                n++;
+                continue;
+            }
             int ind_A = sample(fitness, max_fitness);
             int ind_B = sample(fitness, max_fitness);
             
@@ -259,7 +267,7 @@ int main() {
                 max_ind = ind;
             }
         }
-        if ((max_fitness >= 165379868) && max_fitness > (generational_max_fitness)) {
+        if (/*(max_fitness >= 165379868) &&*/ max_fitness > (generational_max_fitness)) {
             generational_max_fitness = max_fitness;
             printf("%d\n", max_fitness);
             print_solution(generation[max_ind]);
