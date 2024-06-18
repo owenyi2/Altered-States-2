@@ -52,15 +52,15 @@ def search(us_state, solution):
     return False
                 
 solution = [r.split(" ") for r in """\
-P I T K M
-O E R A H
-S N I O S
-D A Y L C
-V L F S E
+P J E R K
+W E N S O
+T M A N Y
+A R I L E
+H D O C I
 """.split("\n")]
 
 us_states = set() 
-crucial_states = ["PENNSYLVANIA", "OREGON", "NEVADA", "UTAH", "COLORADO", "ARIZONA", "NEWMEXICO", "TEXAS", "ARKANSAS", "MISSISSIPPI", "ALABAMA", "FLORIDA"]
+crucial_states = ["PENNSYLVANIA", "OREGON", "NEVADA", "UTAH", "COLORADO", "ARIZONA", "NEWMEXICO", "TEXAS", "ARKANSAS", "TENNESSEE", "ALABAMA", "FLORIDA"]
 
 score = 0
 for us_state, pop in census:

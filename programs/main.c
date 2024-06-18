@@ -142,7 +142,7 @@ int score(char solution[5][5], Census census) {
     for (int i = 0; i < 50; i++) {
         char* us_state = census.us_states[i];
         bool result = search(us_state, solution);
-        if ((i == 0) && !result)  {
+        if ((i == 0) && !result) {
             return 1;
         }
         score += result * census.pops[i];
@@ -240,7 +240,7 @@ int main() {
         }
         int n = 1;
         while (n < GENERATION_SIZE) {
-            if (n < GENERATION_SIZE * 0.1) {
+            if (n < GENERATION_SIZE * 0.3) {
                 randomise((*pnext_generation)[n]);
                 n++;
                 continue;
